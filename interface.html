@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+    <title>ATM Machine Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between; /* Space between left and right */
+            padding: 20px; /* Add some padding to the body */
+        }
+        .atm-container {
+            width: 300px;
+            margin: 50px; /* Center the container vertically */
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1; /* Allow the container to grow */
+        }
+        h1, h3 {
+            text-align: center;
+            color: #333;
+        }
+        .atm-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px; /* Add some space between buttons */
+        }
+        .atm-button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .transactions-list, .other-services-list {
+            margin-top: 10px;
+        }
+        .transaction, .service {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between; /* Space between left and right */
+            width: 100%; /* Full width */
+        }
+        .left-buttons, .right-buttons {
+            width: 48%; /* Adjust width to fit side by side */
+        }
+        /* Increased size for input fields */
+        .atm-input {
+            width: 100%; /* Full width */
+            padding: 12px; /* Increased padding for height */
+            font-size: 16px; /* Increased font size */
+            margin-bottom: 10px; /* Space below input */
+            border: 1px solid #ccc; /* Border for input */
+            border-radius: 5px; /* Rounded corners */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="atm-container">
+        <h1>ATM Machine</h1>
+        <div id="welcome-screen">
+            <h3>Welcome! Please insert your card.</h3>
+            <button type="button" class="atm-button" onclick="login()">Entered</button>
+            <div id="message" class="message"></div>
+        </div>
+
+        <div id="main-menu" class="hidden">
+            <h3>Welcome User!</h3>
+            <div class="button-container">
+                <div class="left-buttons">
+                    <button class="atm-button" onclick="showWithdraw()">Withdraw</button>
+                    <button class="atm-button" onclick="showDeposit()">Deposit</button>
+                    <button class="atm-button" onclick="showBalance()">Balance Inquiry</button>
+                </div>
+                <div class="right-buttons">
+                    <button class="atm-button" onclick="showPinChange()">Change PIN</button>
+                    <button class="atm-button" onclick="showRecentTransactions()">Recent Transactions</button>
+                    <button class="atm-button" onclick="showOtherServices()">Other Services</button>
+                    <button class="atm-button" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="withdraw-screen" class="hidden">
+            <h3>Withdraw Cash</h3>
+            <input type="number" id="withdraw-amount" class="atm-input" placeholder="Enter Amount" required>
+            <button type="button" class="atm-button" onclick="confirmWithdrawal()">Withdraw</button>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+
+        <div id="deposit-screen" class="hidden">
+            <h3>Deposit Cash</h3>
+            <input type="number" id="deposit-amount" class="atm-input" placeholder="Enter Amount" required>
+            <button type="button" class="atm-button" onclick="confirmDeposit()">Deposit</button>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+
+        <div id="balance-screen" class="hidden">
+            <h3>Balance Inquiry</h3>
+            <div id="balance-display" class="message">Your current balance is $1000.</div>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+
+        <div id="pin-change-screen" class="hidden">
+            <h3>Change PIN</h3>
+            <input type="password" id="new-pin" class="atm-input" placeholder="Enter New PIN" required>
+            <input type="password" id="confirm-pin" class="atm-input" placeholder="Confirm New PIN" required>
+            <button type="button" class="atm-button" onclick="changePin()">Change PIN</button>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+
+        <div id="recent-transactions-screen" class="hidden">
+            <h3>Recent Transactions</h3>
+            <div class="transactions-list" id="transactions-list">
+                <!-- Transactions will be displayed here -->
+            </div>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+
+        <div id="other-services-screen" class="hidden">
+            <h3>Other Services</h3>
+            <div class="other-services-list">
+                <div class="service">Request Mini Statement</div>
+                <div class="service">Change Language</div>
+                <div class="service">Contact Bank</div>
+            </div>
+            <button type="button" class="atm-button" onclick="goBack()">Back</button>
+        </div>
+    </div>
+
+    <script>
+        let userLoggedIn = false;
+        let userBalance = 1000; // Example balance
+        let userPin = "1234"; // Example PIN
+        let transactions = []; // Store transaction history
+
+        // Show login screen and authenticate user
+        function login() {
+            userLoggedIn = true; // Simulate successful login
+            showMainMenu();
+        }
+
+        // Show the main menu
+        function showMainMenu() {
+            document.getElementById("welcome-screen").classList.add("hidden");
+            document.getElementById("main-menu").classList.remove("hidden");
+        }
+
+        // Handle Withdraw
+        function showWithdraw() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("withdraw-screen").classList.remove("hidden");
+        }
+
+        function confirmWithdrawal() {
+            const amount = parseFloat(document.getElementById("withdraw-amount").value);
+            if (amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+            if (amount > userBalance) {
+                alert("Insufficient balance!");
+                return;
+            }
+
+            // Ask for PIN to confirm withdrawal
+            const pin = prompt("Please enter your PIN to confirm the withdrawal:");
+            if (pin === userPin) {
+                userBalance -= amount;
+                transactions.push(`Withdrawn: $${amount}`);
+                alert(`You withdrew $${amount}. Your new balance is $${userBalance}.`);
+                goBack();
+            } else {
+                alert("Incorrect PIN. Please try again.");
+            }
+        }
+
+        // Handle Deposit
+        function showDeposit() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("deposit-screen").classList.remove("hidden");
+        }
+
+        function confirmDeposit() {
+            const amount = parseFloat(document.getElementById("deposit-amount").value);
+            if (amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            // Ask for PIN to confirm deposit
+            const pin = prompt("Please enter your PIN to confirm the deposit:");
+            if (pin === userPin) {
+                userBalance += amount;
+                transactions.push(`Deposited: $${amount}`);
+                alert(`You deposited $${amount}. Your new balance is $${userBalance}.`);
+                goBack();
+            } else {
+                alert("Incorrect PIN. Please try again.");
+            }
+        }
+
+        // Show Balance
+        function showBalance() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("balance-screen").classList.remove("hidden");
+        }
+
+        // Change PIN
+        function showPinChange() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("pin-change-screen").classList.remove("hidden");
+        }
+
+        function changePin() {
+            const newPin = document.getElementById("new-pin").value;
+            const confirmPin = document.getElementById("confirm-pin").value;
+
+            if (newPin === confirmPin) {
+                userPin = newPin;
+                alert("Your PIN has been successfully changed.");
+                goBack();
+            } else {
+                alert("PINs do not match. Please try again.");
+            }
+        }
+
+        // Show Recent Transactions
+        function showRecentTransactions() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("recent-transactions-screen").classList.remove("hidden");
+
+            const transactionsList = document.getElementById("transactions-list");
+            transactionsList.innerHTML = '';
+            transactions.forEach(transaction => {
+                const div = document.createElement("div");
+                div.classList.add("transaction");
+                div.textContent = transaction;
+                transactionsList.appendChild(div);
+            });
+        }
+
+        // Show Other Services
+        function showOtherServices() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("other-services-screen").classList.remove("hidden");
+        }
+
+        // Go back to the main menu
+        function goBack() {
+            document.getElementById("withdraw-screen").classList.add("hidden");
+            document.getElementById("deposit-screen").classList.add("hidden");
+            document.getElementById("balance-screen").classList.add("hidden");
+            document.getElementById("pin-change-screen").classList.add("hidden");
+            document.getElementById("recent-transactions-screen").classList.add("hidden");
+            document.getElementById("other-services-screen").classList.add("hidden");
+            document.getElementById("main-menu").classList.remove("hidden");
+        }
+
+        // Logout
+        function logout() {
+            userLoggedIn = false;
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("welcome-screen").classList.remove("hidden");
+            document.getElementById("message").textContent = "";
+        }
+    </script>
+
+</body>
+</html>
